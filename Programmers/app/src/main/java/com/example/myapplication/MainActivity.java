@@ -23,6 +23,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.lang.ref.WeakReference;
 import java.net.*;
 
@@ -38,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
     static MediaPlayer mediaPlayer;
     static TextView time1;
     static TextView time2;
+    static TextView CurLyrics;
+    static TextView NextLyrics;
+    static Map<Integer,String> hm;
 
     static int pos = 0;
     static int curTime = 0;
@@ -59,7 +64,65 @@ public class MainActivity extends AppCompatActivity {
                         time1.setText(String.format("%02d",curTime/60)+":"+String.format("%02d",curTime%60));
                     }
                 });
-                //time1.setText(String.format("%02d",curTime/60)+":"+String.format("%02d",curTime%60));
+                int idx = 0;
+                final int[] arr = new int[hm.size()];
+                for(int i:hm.keySet()) arr[idx++] = i;
+
+                for(int i=0;i<arr.length;i++){
+                    if(mediaPlayer.getCurrentPosition() < arr[i]){
+                        CurLyrics.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                CurLyrics.setText("");
+                            }
+                        });
+                        NextLyrics.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                NextLyrics.setText(hm.get(arr[0]));
+                            }
+                        });
+                        break;
+                    }
+                    if(mediaPlayer.getCurrentPosition() >= arr[i]){
+                        if(i+1!=arr.length){
+                            if(mediaPlayer.getCurrentPosition()<arr[i+1]){
+                                final int finalI = i;
+                                CurLyrics.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CurLyrics.setText(hm.get(arr[finalI]));
+                                    }
+                                });
+
+                                final int finalI1 = i;
+                                NextLyrics.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        NextLyrics.setText(hm.get(arr[finalI1 +1]));
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                        else{
+                            final int finalI2 = i;
+                            CurLyrics.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CurLyrics.setText(hm.get(arr[finalI2]));
+                                }
+                            });
+                            NextLyrics.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    NextLyrics.setText("");
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -77,6 +140,10 @@ public class MainActivity extends AppCompatActivity {
         seekBar = findViewById(R.id.seekBar);
         time1 = findViewById(R.id.time1);
         time2 = findViewById(R.id.time2);
+        CurLyrics = findViewById(R.id.CurLyrics);
+        NextLyrics = findViewById(R.id.NextLyrics);
+
+        hm = new LinkedHashMap<>();
 
         PauseBtn.setVisibility(View.INVISIBLE);
 
@@ -139,6 +206,21 @@ public class MainActivity extends AppCompatActivity {
                             mainactivity.Artist.setText(jsonObject.getString("singer"));
                             new DownloadFilesTask().execute(jsonObject.getString("image"));
                             String mp3 = jsonObject.getString("file");
+                            String tmp = jsonObject.getString("lyrics");
+
+                            String[] lyrics = tmp.split("\n");
+                            for(int i=0;i<lyrics.length;i++){
+                                //System.out.println(lyrics[i]);
+                                String[] s = lyrics[i].split("]");
+                                s[0]=s[0].substring(1,s[0].length()-1);
+                                //System.out.println(s[0]);
+                                String[] s2 = s[0].split(":");
+                                int cur = Integer.parseInt(s2[2])+(Integer.parseInt(s2[1])+Integer.parseInt(s2[0])*60)*1000;
+                                hm.put(cur,s[1]);
+                                //System.out.println(cur);
+                                //System.out.println(hm.get(cur));
+                            }
+
                             mediaPlayer = new MediaPlayer();
                             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                             mediaPlayer.setDataSource(mp3);
@@ -177,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                                             e.printStackTrace();
                                         }
                                         pos = 0;
-                                        System.out.println(duration);
+                                        //System.out.println(duration);
                                         time1.post(new Runnable() {
                                             @Override
                                             public void run() {

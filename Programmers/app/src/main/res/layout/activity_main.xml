@@ -46,7 +46,6 @@
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="Cur lyrics"
         android:textColor="@android:color/background_light"
         android:textSize="18sp" />
 
@@ -58,7 +57,6 @@
         android:layout_marginTop="10dp"
         android:alpha="0.5"
         android:gravity="center"
-        android:text="Next lyrics"
         android:textColor="@android:color/background_light" />
 
     <SeekBar
