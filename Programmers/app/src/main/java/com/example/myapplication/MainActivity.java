@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                             mediaPlayer.setDataSource(mp3);
                             mediaPlayer.setLooping(false);
                             mediaPlayer.prepare();
-                            final int duration = Integer.parseInt(jsonObject.getString("duration"));
+                            final int duration = jsonObject.getInt("duration");
                             time2.setText(String.format("%02d",duration/60)+":"+String.format("%02d",duration%60));
                             seekBar.setMax(mediaPlayer.getDuration());
                             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
