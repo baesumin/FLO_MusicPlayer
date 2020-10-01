@@ -1,23 +1,39 @@
 package com.example.myapplication;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.drawable.DrawableCompat;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
 import android.util.*;
+
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,8 +58,13 @@ public class MainActivity extends AppCompatActivity {
     static TextView time2;
     static TextView CurLyrics;
     static TextView NextLyrics;
+    static ImageButton BackButton;
     static Map<Integer,String> hm;
+    static ScrollView scrollView;
+    static LinearLayout LyricsBox;
+    static ToggleButton toggleButton;
 
+    static Button[] btn;
     static int pos = 0;
     static int curTime = 0;
     static boolean isPlaying = false;
@@ -53,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private final MyHandler mHandler = new MyHandler(this);
 
     static class MyThread extends Thread{
+
         @Override
         public void run(){
             while(isPlaying){
@@ -92,6 +114,14 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         CurLyrics.setText(hm.get(arr[finalI]));
+                                        for(int i=0;i<btn.length;i++){
+                                            if(btn[i].getId()==arr[finalI]){
+                                                btn[i].setTextColor(Color.WHITE);
+                                            }
+                                            else{
+                                                btn[i].setTextColor(Color.parseColor("#80FFFFFF"));
+                                            }
+                                        }
                                     }
                                 });
 
@@ -111,6 +141,14 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     CurLyrics.setText(hm.get(arr[finalI2]));
+                                    for(int i=0;i<btn.length;i++){
+                                        if(btn[i].getId()==arr[finalI2]){
+                                            btn[i].setTextColor(Color.WHITE);
+                                        }
+                                        else{
+                                            btn[i].setTextColor(Color.parseColor("#80FFFFFF"));
+                                        }
+                                    }
                                 }
                             });
                             NextLyrics.post(new Runnable() {
@@ -131,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         SongName = findViewById(R.id.SongName);
         Artist = findViewById(R.id.Artist);
         AlbumPicture = findViewById(R.id.AlbumPicture);
@@ -142,11 +181,28 @@ public class MainActivity extends AppCompatActivity {
         time2 = findViewById(R.id.time2);
         CurLyrics = findViewById(R.id.CurLyrics);
         NextLyrics = findViewById(R.id.NextLyrics);
+        BackButton = findViewById(R.id.BackButton);
+        scrollView = findViewById(R.id.scrollView);
+        LyricsBox = findViewById(R.id.LyricsBox);
+        toggleButton = findViewById(R.id.toggleButton);
 
         hm = new LinkedHashMap<>();
 
         PauseBtn.setVisibility(View.INVISIBLE);
-
+        AlbumPicture.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                AlbumPicture.setVisibility(View.INVISIBLE);
+                //scrollView.setVisibility(View.VISIBLE);
+            };
+        });
+        BackButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                AlbumPicture.setVisibility(View.VISIBLE);
+                //scrollView.setVisibility(View.INVISIBLE);
+            };
+        });
         final String url = "https://grepp-programmers-challenges.s3.ap-northeast-2.amazonaws.com/2020-flo/song.json";
         new Thread(new Runnable() {
             @Override
@@ -155,8 +211,13 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-
     }
+    @Override public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        LinearLayout root = findViewById(R.id.root);
+        System.out.println("hi"+root.getWidth()+" "+root.getHeight());
+    }
+
     public void GET(String s) {
         String result = null;
         try {
@@ -192,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
             weakReference = new WeakReference<MainActivity>(mainactivity);
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.M)
+        @SuppressLint("ResourceType")
         @Override
         public void handleMessage(Message msg) {
             MainActivity mainactivity = weakReference.get();
@@ -221,6 +284,47 @@ public class MainActivity extends AppCompatActivity {
                                 //System.out.println(hm.get(cur));
                             }
 
+                            btn = new Button[hm.size()];
+                            Iterator<Integer> key = hm.keySet().iterator();
+                            for(int i=0;i<hm.size();i++){
+                                final int a = key.next();
+                                btn[i] = new Button(mainactivity);
+                                btn[i].setId(a);
+                                btn[i].setBackgroundTintList(mainactivity.getColorStateList(R.drawable.alpha0));
+                                btn[i].setTextColor(mainactivity.getColorStateList(R.drawable.white));
+                                btn[i].setText(hm.get(a));
+                                final int finalI = i;
+                                btn[i].setOnClickListener(new View.OnClickListener(){
+                                    @Override
+                                    public void onClick(View v) {
+                                        if(!toggleButton.isChecked()){
+                                            for(int j=0;j<btn.length;j++){
+                                                final int finalJ = j;
+                                                btn[j].post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        btn[finalJ].setTextColor(Color.parseColor("#80FFFFFF"));
+                                                    }
+                                                });
+
+                                            }
+                                            btn[finalI].setTextColor(Color.WHITE);
+                                            isPlaying=true;
+                                            pos = a;
+                                            PlayBtn.setVisibility(View.INVISIBLE);
+                                            PauseBtn.setVisibility(View.VISIBLE);
+                                            seekBar.setProgress(a);
+                                            mediaPlayer.seekTo(a);
+                                            mediaPlayer.start();
+                                            new MyThread().start();
+                                        }
+                                        else{
+                                            AlbumPicture.setVisibility(View.VISIBLE);
+                                        }
+                                    }
+                                });
+                                LyricsBox.addView(btn[i]);
+                            }
                             mediaPlayer = new MediaPlayer();
                             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                             mediaPlayer.setDataSource(mp3);
@@ -315,6 +419,16 @@ public class MainActivity extends AppCompatActivity {
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
+
+                                    }
+                                    for(int i=0;i<btn.length;i++){
+                                        final int finalI = i;
+                                        btn[i].post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                btn[finalI].setTextColor(Color.parseColor("#80FFFFFF"));
+                                            }
+                                        });
 
                                     }
                                     time1.post(new Runnable() {
