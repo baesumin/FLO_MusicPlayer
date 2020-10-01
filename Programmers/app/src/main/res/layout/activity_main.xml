@@ -14,7 +14,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="50dp"
         android:gravity="center"
         android:text="song name"
         android:textColor="@android:color/background_light"
@@ -111,7 +110,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:textColor="@android:color/background_light"
         android:textSize="18sp" />
@@ -131,7 +130,7 @@
         android:layout_width="350dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:indeterminate="false" />
 
     <LinearLayout
@@ -162,7 +161,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
         <ImageButton
@@ -189,6 +187,7 @@
             android:id="@+id/stopBtn"
             android:layout_width="75dp"
             android:layout_height="75dp"
+            android:layout_marginStart="300dp"
             android:layout_marginLeft="300dp"
             android:backgroundTint="#00FFFFFF"
             android:scaleType="fitXY"
